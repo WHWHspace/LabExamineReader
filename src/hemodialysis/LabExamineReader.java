@@ -1,6 +1,10 @@
 package hemodialysis;
 
+import db.MysqlHelper;
 import launcher.Main;
+import lisImpl.ExamineReportImpl;
+import lisInterface.ExamineReportInterface;
+import model.ExamineReport;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -8,6 +12,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -17,22 +22,47 @@ public class LabExamineReader implements Runnable{
 
     Logger logger = Main.logger;
     Date lastReadTime;
+    ExamineReportInterface lisImpl;
+    MysqlHelper mysqlHelper;
+    static String url="jdbc:mysql://127.0.0.1:3306/hemodialysis?useUnicode=true&characterEncoding=UTF-8";
+    static String user = "root";
+    static String password = "123456";
+//    static String url="jdbc:mysql://127.0.0.1:3306/myhaisv4?useUnicode=true&characterEncoding=UTF-8";
+//    static String user = "root";
+//    static String password = "";
 
     public LabExamineReader(Date lastReadTime) {
         this.lastReadTime = lastReadTime;
+        lisImpl = new ExamineReportImpl();
+
+        mysqlHelper = new MysqlHelper(url,user,password);
     }
 
     @Override
     public void run() {
-        logger.info(lastReadTime);
-        Date currentDate = new Date();          //ÏÖÔÚµÄÊ±¼ä
+        Date currentDate = new Date();          //ç°åœ¨çš„æ—¶é—´
+        logger.info(currentDate);
         writeLastReadTime(currentDate);
-        ReadNewAddedExamineReport(lastReadTime); //¶ÁÈ¡ÉÏÒ»´Îµ½ÏÖÔÚÖ®¼äµÄÊı¾İ
-        lastReadTime = currentDate;                     //¸úĞÂÉÏÒ»´Î¶ÁÈ¡µÄÊ±¼ä
+        ReadNewAddedExamineReport(lastReadTime); //è¯»å–ä¸Šä¸€æ¬¡åˆ°ç°åœ¨ä¹‹é—´çš„æ•°æ®
+        lastReadTime = currentDate;                     //è·Ÿæ–°ä¸Šä¸€æ¬¡è¯»å–çš„æ—¶é—´
     }
 
     private void ReadNewAddedExamineReport(Date lastReadTime) {
+        ArrayList<ExamineReport> orders = lisImpl.getUpdatedExamineReport(lastReadTime);
+        if(orders.size() > 0){
+            logger.info(new Date() + " æ·»åŠ " + orders.size() +"æ¡æ£€éªŒæŠ¥å‘Šæ•°æ®");
+            mysqlHelper.getConnection();
 
+            insertLongTermOrder(orders);
+
+            mysqlHelper.closeConnection();
+        }
+    }
+
+    private void insertLongTermOrder(ArrayList<ExamineReport> orders) {
+        for (int i = 0; i < orders.size(); i++){
+            String sql = "";
+        }
     }
 
 
@@ -43,7 +73,7 @@ public class LabExamineReader implements Runnable{
             w.write(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(currentDate));
             w.close();
         } catch (IOException e) {
-            logger.error(new Date() + " Ğ´ÈëÉÏÒ»´Î¶ÁÈ¡Ê±¼ä´íÎó\n" + e.getStackTrace());
+            logger.error(new Date() + " å†™å…¥ä¸Šä¸€æ¬¡è¯»å–æ—¶é—´é”™è¯¯\n" + e.getStackTrace());
         }
     }
 }

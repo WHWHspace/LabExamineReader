@@ -4,7 +4,7 @@ import java.sql.*;
 
 /**
  * Created by 31344 on 2016/2/24.
- * Á¬½ÓÑªÍ¸Êı¾İ¿â£¬mysql
+ * è¿æ¥è¡€é€æ•°æ®åº“ï¼Œmysql
  */
 public class MysqlHelper {
 
@@ -20,26 +20,26 @@ public class MysqlHelper {
     }
 
     /**
-     * ½¨Á¢Êı¾İ¿âÁ¬½Ó
+     * å»ºç«‹æ•°æ®åº“è¿æ¥
      */
     public void getConnection(){
         try {
-            //¶¯Ì¬¼ÓÔØmysqlÇı¶¯
+            //åŠ¨æ€åŠ è½½mysqlé©±åŠ¨
             Class.forName("com.mysql.jdbc.Driver");
 
-            //½¨Á¢Á¬½Ó
+            //å»ºç«‹è¿æ¥
             connection = DriverManager.getConnection(url, user, password);
         } catch (ClassNotFoundException e) {
-            System.out.println("¼ÓÔØmysqlÇı¶¯Ê§°Ü£¡");
+            System.out.println("åŠ è½½mysqlé©±åŠ¨å¤±è´¥ï¼");
             e.printStackTrace();
         } catch (SQLException e) {
-            System.out.println("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü£¡");
+            System.out.println("å»ºç«‹æ•°æ®åº“è¿æ¥å¤±è´¥ï¼");
             e.printStackTrace();
         }
     }
 
     /**
-     * Ö´ĞĞ¸üĞÂ£¬²åÈëÓï¾ä
+     * æ‰§è¡Œæ›´æ–°ï¼Œæ’å…¥è¯­å¥
      * @param sql
      */
     public void executeUpdate(String sql){
@@ -48,13 +48,13 @@ public class MysqlHelper {
             s = connection.createStatement();
             int result = s.executeUpdate(sql);
         } catch (SQLException e) {
-            System.out.println("¸üĞÂÊ§°Ü");
+            System.out.println("æ›´æ–°å¤±è´¥");
             e.printStackTrace();
         }
     }
 
     /**
-     * Ö´ĞĞ²éÑ¯Óï¾ä
+     * æ‰§è¡ŒæŸ¥è¯¢è¯­å¥
      * @param sql
      */
     public ResultSet executeQuery(String sql){
@@ -65,20 +65,20 @@ public class MysqlHelper {
             rs = s.executeQuery(sql);
             return rs;
         } catch (SQLException e) {
-            System.out.println("²éÑ¯Ê§°Ü");
+            System.out.println("æŸ¥è¯¢å¤±è´¥");
             e.printStackTrace();
         }
         return null;
     }
 
     /**
-     * ¹Ø±ÕÁ¬½Ó
+     * å…³é—­è¿æ¥
      */
     public void closeConnection(){
         try {
             connection.close();
         } catch (SQLException e) {
-            System.out.println("¹Ø±ÕmysqlÊı¾İ¿âÁ¬½ÓÊ§°Ü£¡");
+            System.out.println("å…³é—­mysqlæ•°æ®åº“è¿æ¥å¤±è´¥ï¼");
             e.printStackTrace();
         }
     }

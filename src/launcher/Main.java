@@ -16,19 +16,21 @@ import java.util.concurrent.TimeUnit;
  */
 public class Main {
     public static Logger logger = Logger.getLogger(Main.class);
-    public static int INTERVAL = 6;
+    public static int INTERVAL = 24;
     static Date lastReadTime;
 
     public static void main(String args[]) {
 
+        readInterval();
+        readLastReadTime();
         Runnable runnable = new LabExamineReader(lastReadTime);
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        // µÚ¶ş¸ö²ÎÊıÎªÊ×´ÎÖ´ĞĞµÄÑÓÊ±Ê±¼ä£¬µÚÈı¸ö²ÎÊıÎª¶¨Ê±Ö´ĞĞµÄ¼ä¸ôÊ±¼ä
-        service.scheduleAtFixedRate(runnable, 0, INTERVAL, TimeUnit.HOURS);
+        // ç¬¬äºŒä¸ªå‚æ•°ä¸ºé¦–æ¬¡æ‰§è¡Œçš„å»¶æ—¶æ—¶é—´ï¼Œç¬¬ä¸‰ä¸ªå‚æ•°ä¸ºå®šæ—¶æ‰§è¡Œçš„é—´éš”æ—¶é—´
+        service.scheduleAtFixedRate(runnable, 0, INTERVAL, TimeUnit.SECONDS);
     }
 
     /**
-     * ¶ÁÈ¡Ê±¼ä¼ä¸ô
+     * è¯»å–æ—¶é—´é—´éš”
      */
     private static void readInterval() {
         try {
@@ -38,21 +40,21 @@ public class Main {
             if (s != null){
                 INTERVAL = Integer.parseInt(s);
             }
-            logger.info(new Date() + " ¶ÁÈ¡Ê±¼ä¼ä¸ôÍê³É");
+            logger.info(new Date() + " è¯»å–æ—¶é—´é—´éš”å®Œæˆ");
             r.close();
         } catch (FileNotFoundException e) {
-            logger.error(new Date() + " Î´ÕÒµ½ÅäÖÃÎÄ¼ş£¬ÇëÔÚconfigÄ¿Â¼ÏÂÌí¼Óinterval.txt,ÉèÖÃ¶ÁÈ¡Ê±¼ä¼ä¸ô£¨ÒÔºÁÃëÎªµ¥Î»£©\n" + e.getStackTrace());
+            logger.error(new Date() + " æœªæ‰¾åˆ°é…ç½®æ–‡ä»¶ï¼Œè¯·åœ¨configç›®å½•ä¸‹æ·»åŠ interval.txt,è®¾ç½®è¯»å–æ—¶é—´é—´éš”ï¼ˆä»¥æ¯«ç§’ä¸ºå•ä½ï¼‰\n" + e.getStackTrace());
 
         } catch (IOException e) {
-            logger.error(new Date() + " ¶ÁÈ¡Ê±¼ä¼ä¸ôÅäÖÃÎÄ¼şÊ§°Ü£¡\n" + e.getStackTrace());
+            logger.error(new Date() + " è¯»å–æ—¶é—´é—´éš”é…ç½®æ–‡ä»¶å¤±è´¥ï¼\n" + e.getStackTrace());
         }
     }
 
 
 
     /**
-     * ¶ÁÈ¡ÉÏÒ»´Î¶ÁÈ¡Êı¾İµÄÊ±¼ä
-     * Èç¹ûÉèÖÃÉÏÒ»´ÎÊ±¼äÎªºÜÔçÒÔÇ°£¬¾ÍÊÇ¶ÁÈ¡ËùÓĞµÄÊı¾İ£¬½¨ÒéµÚÒ»´ÎÔËĞĞµÄÊ±ºòÉèÖÃ
+     * è¯»å–ä¸Šä¸€æ¬¡è¯»å–æ•°æ®çš„æ—¶é—´
+     * å¦‚æœè®¾ç½®ä¸Šä¸€æ¬¡æ—¶é—´ä¸ºå¾ˆæ—©ä»¥å‰ï¼Œå°±æ˜¯è¯»å–æ‰€æœ‰çš„æ•°æ®ï¼Œå»ºè®®ç¬¬ä¸€æ¬¡è¿è¡Œçš„æ—¶å€™è®¾ç½®
      */
     private static void readLastReadTime() {
         try {
@@ -65,14 +67,14 @@ public class Main {
             else{
                 lastReadTime = new Date();
             }
-            logger.info(new Date() + " ¶ÁÈ¡ÉÏÒ»´ÎÊ±¼äÍê³É");
+            logger.info(new Date() + " è¯»å–ä¸Šä¸€æ¬¡æ—¶é—´å®Œæˆ");
             r.close();
         } catch (FileNotFoundException e) {
-            logger.error(new Date() + " Î´ÕÒµ½ÅäÖÃÎÄ¼ş£¬ÇëÔÚconfigÄ¿Â¼ÏÂÌí¼ÓlastReadTime.txt,ÉèÖÃÉÏÒ»´Î¶ÁÈ¡µÄÊ±¼ä¡£Ê±¼ä¸ñÊ½ 2000-02-23 12:12:12\n"  + e.getStackTrace());
+            logger.error(new Date() + " æœªæ‰¾åˆ°é…ç½®æ–‡ä»¶ï¼Œè¯·åœ¨configç›®å½•ä¸‹æ·»åŠ lastReadTime.txt,è®¾ç½®ä¸Šä¸€æ¬¡è¯»å–çš„æ—¶é—´ã€‚æ—¶é—´æ ¼å¼ 2000-02-23 12:12:12\n"  + e.getStackTrace());
         } catch (IOException e) {
-            logger.error(new Date() + " ¶ÁÈ¡ÉÏÒ»´ÎÊ±¼äÅäÖÃÎÄ¼şÊ§°Ü£¡\n" + e.getStackTrace());
+            logger.error(new Date() + " è¯»å–ä¸Šä¸€æ¬¡æ—¶é—´é…ç½®æ–‡ä»¶å¤±è´¥ï¼\n" + e.getStackTrace());
         } catch (ParseException e) {
-            logger.error(new Date() + " ÈÕÆÚ¸ñÊ½´íÎó£¬½âÎö´íÎó\n" + e.getStackTrace());
+            logger.error(new Date() + " æ—¥æœŸæ ¼å¼é”™è¯¯ï¼Œè§£æé”™è¯¯\n" + e.getStackTrace());
         }
 
     }

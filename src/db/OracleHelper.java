@@ -20,28 +20,28 @@ public class OracleHelper {
 
     public void getConnection(){
         try {
-            //¶¯Ì¬¼ÓÔØmysqlÇı¶¯
+            //åŠ¨æ€åŠ è½½mysqlé©±åŠ¨
             Class.forName("oracle.jdbc.driver.OracleDriver");
 
-            //½¨Á¢Á¬½Ó
+            //å»ºç«‹è¿æ¥
             connection = DriverManager.getConnection(url, user, password);
         } catch (ClassNotFoundException e) {
-            System.out.println("¼ÓÔØoracleÇı¶¯Ê§°Ü£¡");
+            System.out.println("åŠ è½½oracleé©±åŠ¨å¤±è´¥ï¼");
             e.printStackTrace();
         } catch (SQLException e) {
-            System.out.println("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü£¡");
+            System.out.println("å»ºç«‹æ•°æ®åº“è¿æ¥å¤±è´¥ï¼");
             e.printStackTrace();
         }
     }
 
     /**
-     * ¹Ø±ÕÁ¬½Ó
+     * å…³é—­è¿æ¥
      */
     public void closeConnection(){
         try {
             connection.close();
         } catch (SQLException e) {
-            System.out.println("¹Ø±ÕoracleÊı¾İ¿âÁ¬½ÓÊ§°Ü£¡");
+            System.out.println("å…³é—­oracleæ•°æ®åº“è¿æ¥å¤±è´¥ï¼");
             e.printStackTrace();
         }
     }
@@ -54,7 +54,7 @@ public class OracleHelper {
             rs = s.executeQuery(sql);
             return rs;
         } catch (SQLException e) {
-            System.out.println("²éÑ¯Ê§°Ü");
+            System.out.println("æŸ¥è¯¢å¤±è´¥");
             e.printStackTrace();
         }
         return  null;
