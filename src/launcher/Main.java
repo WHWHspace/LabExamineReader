@@ -1,5 +1,6 @@
 package launcher;
 
+import constants.CodeMap;
 import hemodialysis.LabExamineReader;
 import org.apache.log4j.Logger;
 
@@ -23,6 +24,8 @@ public class Main {
 
         readInterval();
         readLastReadTime();
+        CodeMap.readCodeMap();
+
         Runnable runnable = new LabExamineReader(lastReadTime);
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         // 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间
@@ -43,10 +46,10 @@ public class Main {
             logger.info(new Date() + " 读取时间间隔完成");
             r.close();
         } catch (FileNotFoundException e) {
-            logger.error(new Date() + " 未找到配置文件，请在config目录下添加interval.txt,设置读取时间间隔（以毫秒为单位）\n" + e.getStackTrace());
+            logger.error(new Date() + " 未找到配置文件，请在config目录下添加interval.txt,设置读取时间间隔（以毫秒为单位）\n" + e);
 
         } catch (IOException e) {
-            logger.error(new Date() + " 读取时间间隔配置文件失败！\n" + e.getStackTrace());
+            logger.error(new Date() + " 读取时间间隔配置文件失败！\n" + e);
         }
     }
 
@@ -70,11 +73,11 @@ public class Main {
             logger.info(new Date() + " 读取上一次时间完成");
             r.close();
         } catch (FileNotFoundException e) {
-            logger.error(new Date() + " 未找到配置文件，请在config目录下添加lastReadTime.txt,设置上一次读取的时间。时间格式 2000-02-23 12:12:12\n"  + e.getStackTrace());
+            logger.error(new Date() + " 未找到配置文件，请在config目录下添加lastReadTime.txt,设置上一次读取的时间。时间格式 2000-02-23 12:12:12\n"  + e);
         } catch (IOException e) {
-            logger.error(new Date() + " 读取上一次时间配置文件失败！\n" + e.getStackTrace());
+            logger.error(new Date() + " 读取上一次时间配置文件失败！\n" + e);
         } catch (ParseException e) {
-            logger.error(new Date() + " 日期格式错误，解析错误\n" + e.getStackTrace());
+            logger.error(new Date() + " 日期格式错误，解析错误\n" + e);
         }
 
     }
