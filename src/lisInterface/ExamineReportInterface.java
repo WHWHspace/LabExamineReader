@@ -10,5 +10,8 @@ import java.util.Date;
  */
 public interface ExamineReportInterface {
     //获取所有病人某一时间之后新增的检验报告
-    public ArrayList<ExamineReport> getUpdatedExamineReport(Date date);
+    public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate);
+
+    //根据病人id获取某一时间之后新增的检验报告
+    public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate,ArrayList<String> ids);
 }

@@ -43,29 +43,60 @@ public class LabExamineReader implements Runnable{
         Date currentDate = new Date();          //现在的时间
         logger.info(currentDate);
         writeLastReadTime(currentDate);
-        ReadNewAddedExamineReport(lastReadTime); //读取上一次到现在之间的数据
+//        readNewAddedExamineReport(lastReadTime); //读取上一次到现在之间的数据
+
         lastReadTime = currentDate;                     //跟新上一次读取的时间
     }
 
-    private void ReadNewAddedExamineReport(Date lastReadTime) {
-        ArrayList<ExamineReport> orders = lisImpl.getUpdatedExamineReport(lastReadTime);
-        if(orders.size() > 0){
-            logger.info(new Date() + " 添加" + orders.size() +"条检验报告数据");
+    private void readNewAddedExamineReport(Date fromDate,Date toDate) {
+        ArrayList<ExamineReport> reports = lisImpl.getUpdatedExamineReport(fromDate,toDate);
+        if(reports.size() > 0){
+            logger.info(new Date() + " 添加" + reports.size() +"条检验报告数据");
             mysqlHelper.getConnection();
 
-            insertLongTermOrder(orders);
+            insertExamineReport(reports);
 
             mysqlHelper.closeConnection();
         }
     }
 
-    private void insertLongTermOrder(ArrayList<ExamineReport> orders) {
-        for (int i = 0; i < orders.size(); i++){
-            String sql = "";
+//    /**
+//     *根据病人id读取某一段时间内新增的检验报告
+//     * @param fromDate
+//     * @param toDate
+//     */
+//    public void readNewAddedExamineReportByIDs(Date fromDate,Date toDate){
+//        ArrayList<String> ids = getPatientIds();
+//
+//        ArrayList<LongTermOrder> orders = hisImpl.getUpdatedLongTermOrder(fromDate, toDate, ids);
+//        insertLongTermOrder(orders);
+//    }
+
+    /**
+     * 插入检验报告数据
+     * @param reports
+     */
+    private void insertExamineReport(ArrayList<ExamineReport> reports) {
+        if(reports == null){
+            return;
+        }
+        if(reports.size() > 0){
+            logger.info(new Date() + " 添加" + reports.size() + "条检验报告数据");
+            mysqlHelper.getConnection();
+
+            for (int i = 0; i < reports.size(); i++){
+//                ...........
+            }
+
+            mysqlHelper.closeConnection();
         }
     }
 
 
+    /**
+     * 写入上一次读取检验报告的最后时间
+     * @param currentDate
+     */
     private void writeLastReadTime(Date currentDate) {
         try {
             String path = System.getProperty("user.dir");
