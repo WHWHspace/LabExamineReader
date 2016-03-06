@@ -1,1 +1,2 @@
-WBC 001
+code1 group1 001
+code2 group1 002

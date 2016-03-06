@@ -1,12 +1,16 @@
 package db;
 
+import launcher.Main;
+import org.apache.log4j.Logger;
+
 import java.sql.*;
+import java.util.Date;
 
 /**
  * Created by 31344 on 2016/2/24.
  */
 public class OracleHelper {
-
+    private Logger logger = Main.logger;
     Connection connection;
     String url;
     String user;
@@ -26,11 +30,9 @@ public class OracleHelper {
             //建立连接
             connection = DriverManager.getConnection(url, user, password);
         } catch (ClassNotFoundException e) {
-            System.out.println("加载oracle驱动失败！");
-            e.printStackTrace();
+            logger.error(new Date() + " 加载oracle驱动失败\n" + e);
         } catch (SQLException e) {
-            System.out.println("建立数据库连接失败！");
-            e.printStackTrace();
+            logger.error(new Date() + " 建立oracle连接失败\n" + e);
         }
     }
 
@@ -41,8 +43,7 @@ public class OracleHelper {
         try {
             connection.close();
         } catch (SQLException e) {
-            System.out.println("关闭oracle数据库连接失败！");
-            e.printStackTrace();
+            logger.error(new Date() + " 关闭oracle数据库连接失败\n" + e);
         }
     }
 
@@ -54,8 +55,7 @@ public class OracleHelper {
             rs = s.executeQuery(sql);
             return rs;
         } catch (SQLException e) {
-            System.out.println("查询失败");
-            e.printStackTrace();
+            logger.error(new Date() + " 查询oracle数据库失败\n" + e);
         }
         return  null;
     }

@@ -1,8 +1,12 @@
 package lisImpl;
 
+import constants.CodeMap;
+import db.MysqlHelper;
 import db.OracleHelper;
+import hemodialysis.LabExamineReader;
 import launcher.Main;
 import lisInterface.ExamineReportInterface;
+import model.ExamineItem;
 import model.ExamineReport;
 import org.apache.log4j.Logger;
 
@@ -30,9 +34,11 @@ public class ExamineReportImpl implements ExamineReportInterface{
     private static final String password = "123456";
 
     private OracleHelper helper;
+    MysqlHelper mysqlHelper;
 
     public ExamineReportImpl(){
         helper = new OracleHelper(url,user,password);
+        mysqlHelper = new MysqlHelper(LabExamineReader.url,LabExamineReader.user,LabExamineReader.password);
     }
 
     /**
@@ -47,8 +53,8 @@ public class ExamineReportImpl implements ExamineReportInterface{
         ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
-        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"result_date_time\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"result_date_time\" <= to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
+//        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
+        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"result_date_time\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"result_date_time\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -65,7 +71,39 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate, Date toDate, ArrayList<String> ids) {
-        return null;
+        helper.getConnection();
+        ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
+        if((ids == null)||(ids.size() == 0)){
+            return reports;
+        }
+        String idsSql = "";
+        idsSql = buildSqlString(ids);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
+//                "and \"PATIENT_ID\" in " + idsSql;
+        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"result_date_time\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"result_date_time\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
+                "and \"patient_id\" in " + idsSql;
+        ResultSet rs = helper.executeQuery(sql);
+        reports = readExamineReportData(rs);
+
+        helper.closeConnection();
+        return reports;
+    }
+
+    private String buildSqlString(ArrayList<String> ids) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(");
+        for (int i = 0; i < ids.size(); i++){
+            sb.append("'");
+            sb.append(ids.get(i));
+            sb.append("'");
+            if(i != ids.size() - 1){
+                sb.append(",");
+            }
+        }
+        sb.append(")");
+        return sb.toString();
     }
 
     /**
@@ -78,8 +116,23 @@ public class ExamineReportImpl implements ExamineReportInterface{
         try {
             while(rs.next()){
                 ExamineReport report = new ExamineReport();
-                String code = getMappedCode(rs.getString("report_item_code"));
+                ExamineItem item = getMappedCode(rs.getString("report_item_code"));
+                if(item == null){
+                    continue;
+                }
+                report.setResult_code(item.group);
+                report.setResult_class(item.code);
+                report.setResult_date(rs.getString("result_date_time"));
+                report.setResult_ver(1);
+                report.setResult_value_t(rs.getString("result"));
+                report.setResult_value_n(Integer.parseInt(rs.getString("result")));
+                report.setKin_date(rs.getString("result_rpt_date_time"));
+                report.setKin_user("");
+                String patientId = rs.getString("patient_id");
+                int patientNo = getPatientNo(patientId);
+                report.setPat_no(patientNo);
 
+                reports.add(report);
             }
         } catch (SQLException e) {
             logger.error(new Date() + " 读取查询数据错误\n" + e);
@@ -87,7 +140,24 @@ public class ExamineReportImpl implements ExamineReportInterface{
         return reports;
     }
 
-    private String getMappedCode(String report_item_code) {
-        return null;
+    private int getPatientNo(String patientId) {
+        mysqlHelper.getConnection();
+        int patientNo = 0;
+        String sql = "SELECT pif_id FROM pat_info where pif_insid = '" + patientId +"';";
+        ResultSet rs = mysqlHelper.executeQuery(sql);
+        try {
+            if(rs.next()){
+                patientNo = Integer.parseInt(rs.getString("pif_id"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        mysqlHelper.closeConnection();
+        return patientNo;
+    }
+
+    private ExamineItem getMappedCode(String report_item_code) {
+        return CodeMap.getMappedCode(report_item_code);
     }
 }

@@ -1,13 +1,17 @@
 package db;
 
+import launcher.Main;
+import org.apache.log4j.Logger;
+
 import java.sql.*;
+import java.util.Date;
 
 /**
  * Created by 31344 on 2016/2/24.
  * 连接血透数据库，mysql
  */
 public class MysqlHelper {
-
+    private Logger logger = Main.logger;
     private Connection connection;
     String url;
     String user;
@@ -30,11 +34,9 @@ public class MysqlHelper {
             //建立连接
             connection = DriverManager.getConnection(url, user, password);
         } catch (ClassNotFoundException e) {
-            System.out.println("加载mysql驱动失败！");
-            e.printStackTrace();
+            logger.error(new Date() + " 加载mysql驱动失败\n" + e);
         } catch (SQLException e) {
-            System.out.println("建立数据库连接失败！");
-            e.printStackTrace();
+            logger.error(new Date() + " 建立mysql连接失败\n" + e);
         }
     }
 
@@ -48,8 +50,7 @@ public class MysqlHelper {
             s = connection.createStatement();
             int result = s.executeUpdate(sql);
         } catch (SQLException e) {
-            System.out.println("更新失败");
-            e.printStackTrace();
+            logger.error(new Date() + " 执行mysql更新错误\n" + e);
         }
     }
 
@@ -65,8 +66,7 @@ public class MysqlHelper {
             rs = s.executeQuery(sql);
             return rs;
         } catch (SQLException e) {
-            System.out.println("查询失败");
-            e.printStackTrace();
+            logger.error(new Date() + " 执行mysql查询错误\n" + e);
         }
         return null;
     }
@@ -78,8 +78,7 @@ public class MysqlHelper {
         try {
             connection.close();
         } catch (SQLException e) {
-            System.out.println("关闭mysql数据库连接失败！");
-            e.printStackTrace();
+            logger.error(new Date() + " 关闭mysql连接失败\n" + e);
         }
     }
 

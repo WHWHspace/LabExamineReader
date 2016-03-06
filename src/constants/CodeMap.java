@@ -1,6 +1,7 @@
 package constants;
 
 import launcher.Main;
+import model.ExamineItem;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class CodeMap {
 
     static Logger logger = Main.logger;
-    static HashMap<String,String> examineCodeMap = new HashMap<String,String>();
+    static HashMap<String, ExamineItem> examineCodeMap = new HashMap<String,ExamineItem>();
 
     /**
      * 读取检验代码映射文件
@@ -26,8 +27,8 @@ public class CodeMap {
             String s = "";
             while((s = r.readLine()) != null){
                 String[] map = s.split(" ");
-                if(map.length == 2){
-                    examineCodeMap.put(map[0],map[1]);
+                if(map.length == 3){
+                    examineCodeMap.put(map[0],new ExamineItem(map[1],map[2]));
                 }
             }
             logger.info(new Date() + " 读取检验项目映射完成");
@@ -44,12 +45,12 @@ public class CodeMap {
      * @param lisCode
      * @return
      */
-    public static String getMappedCode(String lisCode){
-        String code = null;
+    public static ExamineItem getMappedCode(String lisCode){
+        ExamineItem item = null;
         if(lisCode == null){
-            return code;
+            return item;
         }
-        code = examineCodeMap.get(lisCode);
-        return code;
+        item = examineCodeMap.get(lisCode);
+        return item;
     }
 }
