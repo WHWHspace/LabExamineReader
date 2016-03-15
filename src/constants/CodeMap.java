@@ -26,7 +26,7 @@ public class CodeMap {
             BufferedReader r = new BufferedReader(new FileReader(new File(path + "/config/examine_code_map.txt")));
             String s = "";
             while((s = r.readLine()) != null){
-                String[] map = s.split(" ");
+                String[] map = s.split("/");
                 if(map.length == 3){
                     examineCodeMap.put(map[0],new ExamineItem(map[1],map[2]));
                 }

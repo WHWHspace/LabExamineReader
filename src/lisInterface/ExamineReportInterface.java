@@ -9,9 +9,9 @@ import java.util.Date;
  * Created by 31344 on 2016/3/2.
  */
 public interface ExamineReportInterface {
-    //»ñÈ¡ËùÓĞ²¡ÈËÄ³Ò»Ê±¼äÖ®ºóĞÂÔöµÄ¼ìÑé±¨¸æ
+    //è·å–æ‰€æœ‰ç—…äººæŸä¸€æ—¶é—´ä¹‹åæ–°å¢çš„æ£€éªŒæŠ¥å‘Š
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate);
 
-    //¸ù¾İ²¡ÈËid»ñÈ¡Ä³Ò»Ê±¼äÖ®ºóĞÂÔöµÄ¼ìÑé±¨¸æ
+    //æ ¹æ®ç—…äººidè·å–æŸä¸€æ—¶é—´ä¹‹åæ–°å¢çš„æ£€éªŒæŠ¥å‘Š
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate,ArrayList<String> ids);
 }

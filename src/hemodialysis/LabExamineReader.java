@@ -26,12 +26,12 @@ public class LabExamineReader implements Runnable{
     Date lastReadTime;
     ExamineReportInterface lisImpl;
     MysqlHelper mysqlHelper;
-    public static String url="jdbc:mysql://127.0.0.1:3306/hemodialysis?useUnicode=true&characterEncoding=UTF-8";
-    public static String user = "root";
-    public static String password = "123456";
-//    public static String url="jdbc:mysql://127.0.0.1:3306/myhaisv4?useUnicode=true&characterEncoding=UTF-8";
+//    public static String url="jdbc:mysql://127.0.0.1:3306/hemodialysis?useUnicode=true&characterEncoding=UTF-8";
 //    public static String user = "root";
-//    public static String password = "";
+//    public static String password = "123456";
+    public static String url="jdbc:mysql://127.0.0.1:3306/myhaisv4?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true";
+    public static String user = "root";
+    public static String password = "";
 
     public LabExamineReader(Date lastReadTime) {
         this.lastReadTime = lastReadTime;
@@ -119,6 +119,10 @@ public class LabExamineReader implements Runnable{
         ArrayList<String> ids = new ArrayList<String>();
         String sql = "SELECT pif_insid FROM pat_info";
         ResultSet rs = mysqlHelper.executeQuery(sql);
+        if(rs == null){
+            mysqlHelper.closeConnection();
+            return ids;
+        }
         try {
             while(rs.next()){
                 ids.add(rs.getString("pif_insid"));

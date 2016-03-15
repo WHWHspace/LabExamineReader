@@ -23,16 +23,26 @@ public class OracleHelper {
     }
 
     public void getConnection(){
-        try {
-            //动态加载mysql驱动
-            Class.forName("oracle.jdbc.driver.OracleDriver");
+        while(connection == null){
+            try {
+                //动态加载mysql驱动
+                Class.forName("oracle.jdbc.driver.OracleDriver");
 
-            //建立连接
-            connection = DriverManager.getConnection(url, user, password);
-        } catch (ClassNotFoundException e) {
-            logger.error(new Date() + " 加载oracle驱动失败\n" + e);
-        } catch (SQLException e) {
-            logger.error(new Date() + " 建立oracle连接失败\n" + e);
+                //建立连接
+                connection = DriverManager.getConnection(url, user, password);
+            } catch (ClassNotFoundException e) {
+                logger.error(new Date() + " 加载oracle驱动失败\n" + e);
+            } catch (SQLException e) {
+                logger.error(new Date() + " 建立oracle连接失败\n" + e);
+            }
+            if(connection == null){
+                logger.error(new Date() + " 建立oracle连接失败,继续连接中...\n");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -42,6 +52,7 @@ public class OracleHelper {
     public void closeConnection(){
         try {
             connection.close();
+            connection = null;
         } catch (SQLException e) {
             logger.error(new Date() + " 关闭oracle数据库连接失败\n" + e);
         }
