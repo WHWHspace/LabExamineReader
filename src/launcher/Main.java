@@ -17,11 +17,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class Main {
     public static Logger logger = Logger.getLogger(Main.class);
-    public static int INTERVAL = 24;
-    static Date lastReadTime;
+    private int INTERVAL = 24;
+    private Date lastReadTime;
 
     public static void main(String args[]) {
+        new Main().run();
+    }
 
+    private void run() {
         readInterval();
         readLastReadTime();
         CodeMap.readCodeMap();
@@ -35,7 +38,7 @@ public class Main {
     /**
      * 读取时间间隔
      */
-    private static void readInterval() {
+    private void readInterval() {
         try {
             String path = System.getProperty("user.dir");
             BufferedReader r = new BufferedReader(new FileReader(new File(path + "/config/interval.txt")));
@@ -59,7 +62,7 @@ public class Main {
      * 读取上一次读取数据的时间
      * 如果设置上一次时间为很早以前，就是读取所有的数据，建议第一次运行的时候设置
      */
-    private static void readLastReadTime() {
+    private void readLastReadTime() {
         try {
             String path = System.getProperty("user.dir");
             BufferedReader r = new BufferedReader(new FileReader(new File(path + "/config/lastReadTime.txt")));
