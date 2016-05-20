@@ -26,12 +26,12 @@ public class LabExamineReader implements Runnable{
     Date lastReadTime;
     ExamineReportInterface lisImpl;
     MysqlHelper mysqlHelper;
-//    public static String url="jdbc:mysql://127.0.0.1:3306/hemodialysis?useUnicode=true&characterEncoding=UTF-8";
-//    public static String user = "root";
-//    public static String password = "123456";
     public static String url="jdbc:mysql://127.0.0.1:3306/myhaisv4?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true";
     public static String user = "root";
-    public static String password = "";
+    public static String password = "123456";
+//    public static String url="jdbc:mysql://127.0.0.1:3306/myhaisv4?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true";
+//    public static String user = "root";
+//    public static String password = "";
 
     public LabExamineReader(Date lastReadTime) {
         this.lastReadTime = lastReadTime;
@@ -44,16 +44,12 @@ public class LabExamineReader implements Runnable{
     public void run() {
         Date currentDate = new Date();          //现在的时间
         logger.info(currentDate);
+
+        readNewAddedExamineReportByIDs(lastReadTime, currentDate);
         writeLastReadTime(currentDate);
-//        readNewAddedExamineReport(lastReadTime,currentDate); //读取上一次到现在之间的数据
-        readNewAddedExamineReportByIDs(lastReadTime,currentDate);
         lastReadTime = currentDate;                     //跟新上一次读取的时间
     }
 
-    private void readNewAddedExamineReport(Date fromDate,Date toDate) {
-        ArrayList<ExamineReport> reports = lisImpl.getUpdatedExamineReport(fromDate,toDate);
-        insertExamineReport(reports);
-    }
 
     /**
      *根据病人id读取某一段时间内新增的检验报告
@@ -77,6 +73,7 @@ public class LabExamineReader implements Runnable{
         }
         if(reports.size() > 0){
             logger.info(new Date() + " 添加" + reports.size() + "条检验报告数据");
+            mysqlHelper = new MysqlHelper(url,user,password);
             mysqlHelper.getConnection();
 
             for (int i = 0; i < reports.size(); i++){
@@ -114,10 +111,11 @@ public class LabExamineReader implements Runnable{
      * @return
      */
     private ArrayList<String> getPatientIds() {
+        mysqlHelper = new MysqlHelper(url,user,password);
         mysqlHelper.getConnection();
 
         ArrayList<String> ids = new ArrayList<String>();
-        String sql = "SELECT pif_insid FROM pat_info";
+        String sql = "SELECT pif_ic FROM pat_info";
         ResultSet rs = mysqlHelper.executeQuery(sql);
         if(rs == null){
             mysqlHelper.closeConnection();
@@ -125,7 +123,9 @@ public class LabExamineReader implements Runnable{
         }
         try {
             while(rs.next()){
-                ids.add(rs.getString("pif_insid"));
+                if(rs.getString("pif_ic") != null){
+                    ids.add(rs.getString("pif_ic"));
+                }
             }
         } catch (SQLException e) {
             logger.error(new Date() + "读取所有病人id失败" + e);

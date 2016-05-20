@@ -25,10 +25,10 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private Logger logger = Main.logger;
 
-    private static final String ExamineReportViewName = "LAB_REPORT";
+    private static final String ExamineReportViewName = "v_lis_view";
     private static final String url = "jdbc:oracle:thin:@132.147.160.7:1521:orcl";
-    private static final String user = "lab";
-    private static final String password = "lab117";
+    private static final String user = "sa";
+    private static final String password = "bsoft";
 
 //    private static final String ExamineReportViewName = "lab_report";
 //    private static final String url = "jdbc:oracle:thin:@127.0.0.1:1521:orcl";
