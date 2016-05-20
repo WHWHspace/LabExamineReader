@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Main {
     public static Logger logger = Logger.getLogger(Main.class);
-    private int INTERVAL = 24;
+    private int INTERVAL = 1;
     private Date lastReadTime;
 
     public static void main(String args[]) {
@@ -32,7 +32,7 @@ public class Main {
         Runnable runnable = new LabExamineReader(lastReadTime);
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         // 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间
-        service.scheduleAtFixedRate(runnable, 0, INTERVAL, TimeUnit.SECONDS);
+        service.scheduleAtFixedRate(runnable, 1, INTERVAL, TimeUnit.MINUTES);
     }
 
     /**

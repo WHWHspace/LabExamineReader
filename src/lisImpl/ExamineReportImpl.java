@@ -3,6 +3,7 @@ package lisImpl;
 import constants.CodeMap;
 import db.MysqlHelper;
 import db.OracleHelper;
+import db.SqlServerHelper;
 import hemodialysis.LabExamineReader;
 import launcher.Main;
 import lisInterface.ExamineReportInterface;
@@ -25,21 +26,21 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private Logger logger = Main.logger;
 
-    private static final String ExamineReportViewName = "LAB_REPORT";
-    private static final String url = "jdbc:oracle:thin:@132.147.160.7:1521:orcl";
-    private static final String user = "lab";
-    private static final String password = "lab117";
+//    private static final String ExamineReportViewName = "xt";
+//    private static final String url = "jdbc:sqlserver://127.0.0.1:1433;DatabaseName=lis2002";
+//    private static final String user = "xt";
+//    private static final String password = "xt";
 
-//    private static final String ExamineReportViewName = "lab_report";
-//    private static final String url = "jdbc:oracle:thin:@127.0.0.1:1521:orcl";
-//    private static final String user = "test";
-//    private static final String password = "123456";
+    private static final String ExamineReportViewName = "xt";
+    private static final String url = "jdbc:sqlserver://172.18.100.136:1433;DatabaseName=lis2002";
+    private static final String user = "xt";
+    private static final String password = "xt";
 
-    private OracleHelper helper;
+    private SqlServerHelper helper;
     MysqlHelper mysqlHelper;
 
     public ExamineReportImpl(){
-        helper = new OracleHelper(url,user,password);
+        helper = new SqlServerHelper(url,user,password);
         mysqlHelper = new MysqlHelper(LabExamineReader.url,LabExamineReader.user,LabExamineReader.password);
     }
 
@@ -51,6 +52,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate) {
+        helper = new SqlServerHelper(url,user,password);
         helper.getConnection();
         ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
 
@@ -73,6 +75,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate, Date toDate, ArrayList<String> ids) {
+        helper = new SqlServerHelper(url,user,password);
         helper.getConnection();
         ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
         if((ids == null)||(ids.size() == 0)){
@@ -82,10 +85,8 @@ public class ExamineReportImpl implements ExamineReportInterface{
         idsSql = buildSqlString(ids);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "SELECT REPORT_ITEM_CODE,RESULT_DATE_TIME,RESULT,RESULTS_RPT_DATE_TIME,PATIENT_ID from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
-                "and \"PATIENT_ID\" in " + idsSql;
-//        String sql = "SELECT REPORT_ITEM_CODE,RESULT_DATE_TIME,RESULT,RESULTS_RPT_DATE_TIME,PATIENT_ID from \""+ ExamineReportViewName +"\" WHERE \"result_date_time\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"result_date_time\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
-//                "and \"patient_id\" in " + idsSql;
+        String sql = "select * from xt where 报告时间 > '" + dateFormat.format(fromDate) + "' and 报告时间 <= '" + dateFormat.format(toDate) + "' and " +
+                "患者编号 in " + idsSql;
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -118,32 +119,35 @@ public class ExamineReportImpl implements ExamineReportInterface{
         if(rs == null){
             return reports;
         }
+        mysqlHelper = new MysqlHelper(LabExamineReader.url,LabExamineReader.user,LabExamineReader.password);
         mysqlHelper.getConnection();
         try {
             while(rs.next()){
                 ExamineReport report = new ExamineReport();
-                ExamineItem item = getMappedCode(rs.getString("report_item_code"));
+                ExamineItem item = getMappedCode(rs.getString("项目名称"));
                 if(item == null){
                     continue;
                 }
                 report.setResult_code(item.code);
                 report.setResult_class(item.group);
-//                report.setResult_code("4001");
-//                report.setResult_class("G001");
                 SimpleDateFormat readFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 try {
-                    report.setResult_date(dateFormat.format(readFormat.parse(rs.getString("result_date_time"))));
+                    report.setResult_date(dateFormat.format(readFormat.parse(rs.getString("报告时间"))));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
                 report.setResult_ver(0);
-                String result = rs.getString("result");
+                String result = rs.getString("检测结果");
                 report.setResult_value_t(result);
                 report.setResult_value_n(parseDouble(result));
-                report.setKin_date(rs.getString("results_rpt_date_time"));
+                try {
+                    report.setKin_date(dateFormat.format(readFormat.parse(rs.getString("报告时间"))));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
                 report.setKin_user("");
-                String patientId = rs.getString("patient_id");
+                String patientId = rs.getString("患者编号");
                 int patientNo = getPatientNo(patientId);
                 report.setPat_no(patientNo);
 
@@ -170,7 +174,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private int getPatientNo(String patientId) {
         int patientNo = 0;
-        String sql = "SELECT pif_id FROM pat_info where pif_insid = '" + patientId +"';";
+        String sql = "SELECT pif_id FROM pat_info where pif_mrn = '" + patientId +"';";
         ResultSet rs = mysqlHelper.executeQuery(sql);
         if(rs == null){
             return patientNo;
