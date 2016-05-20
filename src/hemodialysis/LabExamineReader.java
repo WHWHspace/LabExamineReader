@@ -43,6 +43,9 @@ public class LabExamineReader implements Runnable{
     @Override
     public void run() {
         Date currentDate = new Date();          //现在的时间
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+
         logger.info(currentDate);
 
         readNewAddedExamineReportByIDs(lastReadTime, currentDate);

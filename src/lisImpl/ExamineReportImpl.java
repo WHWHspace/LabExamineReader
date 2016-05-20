@@ -3,6 +3,7 @@ package lisImpl;
 import constants.CodeMap;
 import db.MysqlHelper;
 import db.OracleHelper;
+import db.SqlServerHelper;
 import hemodialysis.LabExamineReader;
 import launcher.Main;
 import lisInterface.ExamineReportInterface;
@@ -25,21 +26,21 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private Logger logger = Main.logger;
 
+//    private static final String ExamineReportViewName = "v_lis_view";
+//    private static final String url = "jdbc:sqlserver://172.25.5.250:1433;DatabaseName=szdc_BQ";
+//    private static final String user = "sa";
+//    private static final String password = "bsoft";
+
     private static final String ExamineReportViewName = "v_lis_view";
-    private static final String url = "jdbc:oracle:thin:@132.147.160.7:1521:orcl";
+    private static final String url = "jdbc:sqlserver://127.0.0.1:1433;DatabaseName=SuzhouThirdHospitalLis";
     private static final String user = "sa";
-    private static final String password = "bsoft";
+    private static final String password = "123456";
 
-//    private static final String ExamineReportViewName = "lab_report";
-//    private static final String url = "jdbc:oracle:thin:@127.0.0.1:1521:orcl";
-//    private static final String user = "test";
-//    private static final String password = "123456";
-
-    private OracleHelper helper;
+    private SqlServerHelper helper;
     MysqlHelper mysqlHelper;
 
     public ExamineReportImpl(){
-        helper = new OracleHelper(url,user,password);
+        helper = new SqlServerHelper(url,user,password);
         mysqlHelper = new MysqlHelper(LabExamineReader.url,LabExamineReader.user,LabExamineReader.password);
     }
 
@@ -51,6 +52,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate) {
+        helper = new SqlServerHelper(url,user,password);
         helper.getConnection();
         ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
 
@@ -73,6 +75,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate, Date toDate, ArrayList<String> ids) {
+        helper = new SqlServerHelper(url,user,password);
         helper.getConnection();
         ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
         if((ids == null)||(ids.size() == 0)){
@@ -82,10 +85,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
         idsSql = buildSqlString(ids);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "SELECT REPORT_ITEM_CODE,RESULT_DATE_TIME,RESULT,RESULTS_RPT_DATE_TIME,PATIENT_ID from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
-                "and \"PATIENT_ID\" in " + idsSql;
-//        String sql = "SELECT REPORT_ITEM_CODE,RESULT_DATE_TIME,RESULT,RESULTS_RPT_DATE_TIME,PATIENT_ID from \""+ ExamineReportViewName +"\" WHERE \"result_date_time\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"result_date_time\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
-//                "and \"patient_id\" in " + idsSql;
+        String sql = "select * from "+ ExamineReportViewName +" where EFFECTIVETIME > '"+ dateFormat.format(fromDate) +"' and EFFECTIVETIME < '"+ dateFormat.format(toDate) +"' and IDCARD in " + idsSql;
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -118,30 +118,29 @@ public class ExamineReportImpl implements ExamineReportInterface{
         if(rs == null){
             return reports;
         }
+        mysqlHelper = new MysqlHelper(LabExamineReader.url,LabExamineReader.user,LabExamineReader.password);
         mysqlHelper.getConnection();
         try {
             while(rs.next()){
                 ExamineReport report = new ExamineReport();
-                ExamineItem item = getMappedCode(rs.getString("report_item_code"));
+                ExamineItem item = getMappedCode(rs.getString("EX_PROJ_CODE"));
                 if(item == null){
                     continue;
                 }
                 report.setResult_code(item.code);
                 report.setResult_class(item.group);
-//                report.setResult_code("4001");
-//                report.setResult_class("G001");
                 SimpleDateFormat readFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 try {
-                    report.setResult_date(dateFormat.format(readFormat.parse(rs.getString("result_date_time"))));
+                    report.setResult_date(dateFormat.format(readFormat.parse(rs.getString("EffectiveTime"))));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
                 report.setResult_ver(0);
-                String result = rs.getString("result");
+                String result = rs.getString("NO_RPT");
                 report.setResult_value_t(result);
                 report.setResult_value_n(parseDouble(result));
-                report.setKin_date(rs.getString("results_rpt_date_time"));
+                report.setKin_date(rs.getString("EffectiveTime"));
                 report.setKin_user("");
                 String patientId = rs.getString("patient_id");
                 int patientNo = getPatientNo(patientId);
@@ -170,7 +169,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private int getPatientNo(String patientId) {
         int patientNo = 0;
-        String sql = "SELECT pif_id FROM pat_info where pif_insid = '" + patientId +"';";
+        String sql = "SELECT pif_id FROM pat_info where pif_ic = '" + patientId +"';";
         ResultSet rs = mysqlHelper.executeQuery(sql);
         if(rs == null){
             return patientNo;
