@@ -13,8 +13,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -26,12 +28,12 @@ public class LabExamineReader implements Runnable{
     Date lastReadTime;
     ExamineReportInterface lisImpl;
     MysqlHelper mysqlHelper;
-    public static String url="jdbc:mysql://127.0.0.1:3306/myhaisv4?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true";
-    public static String user = "root";
-    public static String password = "123456";
 //    public static String url="jdbc:mysql://127.0.0.1:3306/myhaisv4?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true";
 //    public static String user = "root";
-//    public static String password = "";
+//    public static String password = "123456";
+    public static String url="jdbc:mysql://127.0.0.1:3306/myhaisv4?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true";
+    public static String user = "root";
+    public static String password = "";
 
     public LabExamineReader(Date lastReadTime) {
         this.lastReadTime = lastReadTime;
@@ -42,14 +44,22 @@ public class LabExamineReader implements Runnable{
 
     @Override
     public void run() {
-        Date currentDate = new Date();          //现在的时间
+        Date currentDate = new Date();
+        Calendar cal = Calendar.getInstance();
+        String s = new SimpleDateFormat( "yyyy-MM-dd ").format(cal.getTime());
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date today = new Date();
+        try {
+            today = dateFormat.parse(s);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
 
         logger.info(currentDate);
 
-        readNewAddedExamineReportByIDs(lastReadTime, currentDate);
-        writeLastReadTime(currentDate);
+        readNewAddedExamineReportByIDs(lastReadTime, today);
+        writeLastReadTime(today);
         lastReadTime = currentDate;                     //跟新上一次读取的时间
     }
 
@@ -118,7 +128,7 @@ public class LabExamineReader implements Runnable{
         mysqlHelper.getConnection();
 
         ArrayList<String> ids = new ArrayList<String>();
-        String sql = "SELECT pif_ic FROM pat_info";
+        String sql = "SELECT pif_insid FROM pat_info";
         ResultSet rs = mysqlHelper.executeQuery(sql);
         if(rs == null){
             mysqlHelper.closeConnection();
@@ -126,8 +136,8 @@ public class LabExamineReader implements Runnable{
         }
         try {
             while(rs.next()){
-                if(rs.getString("pif_ic") != null){
-                    ids.add(rs.getString("pif_ic"));
+                if(rs.getString("pif_insid") != null){
+                    ids.add(rs.getString("pif_insid"));
                 }
             }
         } catch (SQLException e) {

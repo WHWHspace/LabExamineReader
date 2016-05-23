@@ -26,15 +26,15 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private Logger logger = Main.logger;
 
-//    private static final String ExamineReportViewName = "v_lis_view";
-//    private static final String url = "jdbc:sqlserver://172.25.5.250:1433;DatabaseName=szdc_BQ";
-//    private static final String user = "sa";
-//    private static final String password = "bsoft";
-
     private static final String ExamineReportViewName = "v_lis_view";
-    private static final String url = "jdbc:sqlserver://127.0.0.1:1433;DatabaseName=SuzhouThirdHospitalLis";
+    private static final String url = "jdbc:sqlserver://172.25.5.250:1433;DatabaseName=szdc_BQ";
     private static final String user = "sa";
-    private static final String password = "123456";
+    private static final String password = "bsoft";
+
+//    private static final String ExamineReportViewName = "v_lis_view";
+//    private static final String url = "jdbc:sqlserver://127.0.0.1:1433;DatabaseName=SuzhouThirdHospitalLis";
+//    private static final String user = "sa";
+//    private static final String password = "123456";
 
     private SqlServerHelper helper;
     MysqlHelper mysqlHelper;
@@ -85,7 +85,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
         idsSql = buildSqlString(ids);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "select * from "+ ExamineReportViewName +" where EFFECTIVETIME > '"+ dateFormat.format(fromDate) +"' and EFFECTIVETIME < '"+ dateFormat.format(toDate) +"' and IDCARD in " + idsSql;
+        String sql = "select * from "+ ExamineReportViewName +" where EFFECTIVETIME > '"+ dateFormat.format(fromDate) +"' and EFFECTIVETIME < '"+ dateFormat.format(toDate) +"' and CardNo in " + idsSql;
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -129,20 +129,15 @@ public class ExamineReportImpl implements ExamineReportInterface{
                 }
                 report.setResult_code(item.code);
                 report.setResult_class(item.group);
-                SimpleDateFormat readFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                try {
-                    report.setResult_date(dateFormat.format(readFormat.parse(rs.getString("EffectiveTime"))));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+                report.setResult_date(rs.getString("EffectiveTime").substring(0,10));
+
                 report.setResult_ver(0);
                 String result = rs.getString("NO_RPT");
                 report.setResult_value_t(result);
                 report.setResult_value_n(parseDouble(result));
                 report.setKin_date(rs.getString("EffectiveTime"));
                 report.setKin_user("");
-                String patientId = rs.getString("patient_id");
+                String patientId = rs.getString("CardNo");
                 int patientNo = getPatientNo(patientId);
                 report.setPat_no(patientNo);
 
@@ -169,7 +164,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private int getPatientNo(String patientId) {
         int patientNo = 0;
-        String sql = "SELECT pif_id FROM pat_info where pif_ic = '" + patientId +"';";
+        String sql = "SELECT pif_id FROM pat_info where pif_insid = '" + patientId +"';";
         ResultSet rs = mysqlHelper.executeQuery(sql);
         if(rs == null){
             return patientNo;
