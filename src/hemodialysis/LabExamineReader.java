@@ -71,9 +71,26 @@ public class LabExamineReader implements Runnable{
      */
     public void readNewAddedExamineReportByIDs(Date fromDate,Date toDate){
         ArrayList<String> ids = getPatientIds();
+        ids = formatIds(ids);
 
-        ArrayList<ExamineReport> reports = lisImpl.getUpdatedExamineReport(fromDate, toDate, ids);
-        insertExamineReport(reports);
+        for(String id : ids){
+            ArrayList<ExamineReport> reports = lisImpl.getUpdatedExamineReport(fromDate, toDate, id);
+            insertExamineReport(reports);
+        }
+    }
+
+    private ArrayList<String> formatIds(ArrayList<String> ids) {
+        ArrayList<String> formatedIds = new ArrayList<String>();
+        for(String id : ids){
+            if(id.startsWith("SA")){
+                id = id.substring(2);
+            }
+            else if(id.startsWith("A")){
+                id = id.substring(1);
+            }
+            formatedIds.add(id);
+        }
+        return formatedIds;
     }
 
     /**

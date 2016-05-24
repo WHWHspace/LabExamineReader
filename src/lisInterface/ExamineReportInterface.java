@@ -14,4 +14,7 @@ public interface ExamineReportInterface {
 
     //根据病人id获取某一时间之后新增的检验报告
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate,ArrayList<String> ids);
+
+    //
+    public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate,String id);
 }

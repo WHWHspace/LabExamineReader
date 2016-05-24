@@ -93,6 +93,32 @@ public class ExamineReportImpl implements ExamineReportInterface{
         return reports;
     }
 
+    /**
+     * 苏州特例，病人医保号可能为SA3213213,或者A3213213,或3213213
+     * 只有最后的数字是一样的，只能用这个来区分病人,血透系统记录的是3213213
+     * @param fromDate
+     * @param toDate
+     * @param id
+     * @return
+     */
+    @Override
+    public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate, Date toDate, String id) {
+        helper = new SqlServerHelper(url,user,password);
+        helper.getConnection();
+        ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
+        if(id == null){
+            return reports;
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String sql = "select * from "+ ExamineReportViewName +" where EFFECTIVETIME > '"+ dateFormat.format(fromDate) +"' and EFFECTIVETIME <= '"+ dateFormat.format(toDate) +"' and CardNo like '%" + id + "'";
+        ResultSet rs = helper.executeQuery(sql);
+        reports = readExamineReportData(rs);
+
+        helper.closeConnection();
+        return reports;
+    }
+
     private String buildSqlString(ArrayList<String> ids) {
         StringBuilder sb = new StringBuilder();
         sb.append("(");
@@ -163,8 +189,15 @@ public class ExamineReportImpl implements ExamineReportInterface{
     }
 
     private int getPatientNo(String patientId) {
+        if(patientId.startsWith("SA")){
+            patientId = patientId.substring(2);
+        }
+        else if(patientId.startsWith("A")){
+            patientId = patientId.substring(1);
+        }
+
         int patientNo = 0;
-        String sql = "SELECT pif_id FROM pat_info where pif_insid = '" + patientId +"';";
+        String sql = "SELECT pif_id FROM pat_info where pif_insid like '%" + patientId +"';";
         ResultSet rs = mysqlHelper.executeQuery(sql);
         if(rs == null){
             return patientNo;
