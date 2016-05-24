@@ -153,8 +153,9 @@ public class LabExamineReader implements Runnable{
         }
         try {
             while(rs.next()){
-                if(rs.getString("pif_insid") != null){
-                    ids.add(rs.getString("pif_insid"));
+                String id = rs.getString("pif_insid");
+                if((id != null)&&!("".equals(id))){
+                    ids.add(id);
                 }
             }
         } catch (SQLException e) {
