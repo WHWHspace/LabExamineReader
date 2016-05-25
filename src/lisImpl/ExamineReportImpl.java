@@ -25,18 +25,13 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private Logger logger = Main.logger;
 
-    private static final String ExamineReportViewName = "LAB_REPORT";
-    private static final String url = "jdbc:oracle:thin:@132.147.160.7:1521:orcl";
-    private static final String user = "lab";
-    private static final String password = "lab117";
-
-//    private static final String ExamineReportViewName = "lab_report";
-//    private static final String url = "jdbc:oracle:thin:@127.0.0.1:1521:orcl";
-//    private static final String user = "test";
-//    private static final String password = "123456";
+    private static final String ExamineReportViewName = "lab_report";
+    private static final String url = "jdbc:oracle:thin:@127.0.0.1:1521:orcl";
+    private static final String user = "test";
+    private static final String password = "123456";
 
     private OracleHelper helper;
-    MysqlHelper mysqlHelper;
+    private MysqlHelper mysqlHelper;
 
     public ExamineReportImpl(){
         helper = new OracleHelper(url,user,password);
@@ -51,17 +46,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate) {
-        helper.getConnection();
-        ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
-//        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"result_date_time\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"result_date_time\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
-        ResultSet rs = helper.executeQuery(sql);
-        reports = readExamineReportData(rs);
-
-        helper.closeConnection();
-        return reports;
+        return null;
     }
 
     /**
@@ -84,8 +69,6 @@ public class ExamineReportImpl implements ExamineReportInterface{
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String sql = "SELECT REPORT_ITEM_CODE,RESULT_DATE_TIME,RESULT,RESULTS_RPT_DATE_TIME,PATIENT_ID from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
                 "and \"PATIENT_ID\" in " + idsSql;
-//        String sql = "SELECT REPORT_ITEM_CODE,RESULT_DATE_TIME,RESULT,RESULTS_RPT_DATE_TIME,PATIENT_ID from \""+ ExamineReportViewName +"\" WHERE \"result_date_time\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"result_date_time\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
-//                "and \"patient_id\" in " + idsSql;
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
