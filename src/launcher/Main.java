@@ -25,10 +25,11 @@ public class Main {
     }
 
     private void run() {
-        readInterval();
-        readLastReadTime();
-        CodeMap.readCodeMap();
+        readInterval();         //读取时间间隔
+        readLastReadTime();     //读取上一次执行的时间
+        CodeMap.readCodeMap();  //读取检验项目对应表
 
+        //新建读取lis线程
         Runnable runnable = new LabExamineReader(lastReadTime);
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         // 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间
