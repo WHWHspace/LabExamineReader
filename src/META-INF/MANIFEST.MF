@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Class-Path: ojdbc6.jar log4j-1.2.17.jar mysql-connector-java-5.1.38-bi
- n.jar sqljdbc.jar
+Class-Path: log4j-1.2.17.jar mysql-connector-java-5.1.38-bin.jar ojdbc
+ 6.jar sqljdbc.jar
 Main-Class: launcher.Main
 

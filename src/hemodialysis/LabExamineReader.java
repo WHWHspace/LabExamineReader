@@ -64,7 +64,7 @@ public class LabExamineReader implements Runnable{
         logger.info(currentDate);
         readNewAddedExamineReportByIDs(lastReadTime, yesterday);//读取报告日期为上一次时间到昨天之间的检验
         writeLastReadTime(yesterday);
-        lastReadTime = currentDate;                     //跟新上一次读取的时间
+        lastReadTime = yesterday;                     //跟新上一次读取的时间
     }
 
     private void readNewAddedExamineReport(Date fromDate,Date toDate) {
