@@ -44,9 +44,9 @@ public class LabExamineReader implements Runnable{
     public void run() {
         Date currentDate = new Date();          //现在的时间
         logger.info(currentDate);
-        writeLastReadTime(currentDate);
 //        readNewAddedExamineReport(lastReadTime,currentDate); //读取上一次到现在之间的数据
         readNewAddedExamineReportByIDs(lastReadTime,currentDate);
+        writeLastReadTime(currentDate);
         lastReadTime = currentDate;                     //跟新上一次读取的时间
     }
 
@@ -61,7 +61,7 @@ public class LabExamineReader implements Runnable{
      * @param toDate
      */
     public void readNewAddedExamineReportByIDs(Date fromDate,Date toDate){
-        ArrayList<String> ids = getPatientIds();
+        ArrayList<String> ids = getPatientIds();    //id使用病人身份证
 
         ArrayList<ExamineReport> reports = lisImpl.getUpdatedExamineReport(fromDate, toDate, ids);
         insertExamineReport(reports);
@@ -110,14 +110,14 @@ public class LabExamineReader implements Runnable{
     }
 
     /**
-     * 读取所有血透病人在his系统中的id
+     * 读取所有血透病人在his系统中的id(身份证)
      * @return
      */
     private ArrayList<String> getPatientIds() {
         mysqlHelper.getConnection();
 
         ArrayList<String> ids = new ArrayList<String>();
-        String sql = "SELECT pif_insid FROM pat_info";
+        String sql = "SELECT pif_ic FROM pat_info";
         ResultSet rs = mysqlHelper.executeQuery(sql);
         if(rs == null){
             mysqlHelper.closeConnection();
@@ -125,7 +125,7 @@ public class LabExamineReader implements Runnable{
         }
         try {
             while(rs.next()){
-                ids.add(rs.getString("pif_insid"));
+                ids.add(rs.getString("pif_ic"));
             }
         } catch (SQLException e) {
             logger.error(new Date() + "读取所有病人id失败" + e);

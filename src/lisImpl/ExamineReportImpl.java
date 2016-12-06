@@ -25,10 +25,10 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private Logger logger = Main.logger;
 
-    private static final String ExamineReportViewName = "lab_report";
-    private static final String url = "jdbc:oracle:thin:@127.0.0.1:1521:orcl";
-    private static final String user = "test";
-    private static final String password = "123456";
+    private static final String ExamineReportViewName = "HD_LAB_TEST_MASTER_V";
+    private static final String url = "jdbc:oracle:thin:@//192.168.190.126:1521/racdb.oracle.com";
+    private static final String user = "his3";
+    private static final String password = "his3";
 
     private OracleHelper helper;
     private MysqlHelper mysqlHelper;
@@ -67,8 +67,8 @@ public class ExamineReportImpl implements ExamineReportInterface{
         idsSql = buildSqlString(ids);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "SELECT REPORT_ITEM_CODE,RESULT_DATE_TIME,RESULT,RESULTS_RPT_DATE_TIME,PATIENT_ID from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
-                "and \"PATIENT_ID\" in " + idsSql;
+        String sql = "SELECT REPORT_ITEM_NAME,RESULTS_RPT_DATE_TIME,RESULT,SHENFENZH from \""+ ExamineReportViewName +"\" WHERE \"RESULTS_RPT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULTS_RPT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') " +
+                "and \"SHENFENZH\" in " + idsSql;
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -105,7 +105,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
         try {
             while(rs.next()){
                 ExamineReport report = new ExamineReport();
-                ExamineItem item = getMappedCode(rs.getString("report_item_code"));
+                ExamineItem item = getMappedCode(rs.getString("REPORT_ITEM_NAME"));
                 if(item == null){
                     continue;
                 }
@@ -116,17 +116,17 @@ public class ExamineReportImpl implements ExamineReportInterface{
                 SimpleDateFormat readFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 try {
-                    report.setResult_date(dateFormat.format(readFormat.parse(rs.getString("result_date_time"))));
+                    report.setResult_date(dateFormat.format(readFormat.parse(rs.getString("RESULTS_RPT_DATE_TIME"))));
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
                 report.setResult_ver(0);
-                String result = rs.getString("result");
+                String result = rs.getString("RESULT");
                 report.setResult_value_t(result);
                 report.setResult_value_n(parseDouble(result));
-                report.setKin_date(rs.getString("results_rpt_date_time"));
+                report.setKin_date(rs.getString("RESULTS_RPT_DATE_TIME"));
                 report.setKin_user("");
-                String patientId = rs.getString("patient_id");
+                String patientId = rs.getString("SHENFENZH");
                 int patientNo = getPatientNo(patientId);
                 report.setPat_no(patientNo);
 
@@ -153,7 +153,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private int getPatientNo(String patientId) {
         int patientNo = 0;
-        String sql = "SELECT pif_id FROM pat_info where pif_insid = '" + patientId +"';";
+        String sql = "SELECT pif_id FROM pat_info where pif_ic = '" + patientId +"';";
         ResultSet rs = mysqlHelper.executeQuery(sql);
         if(rs == null){
             return patientNo;

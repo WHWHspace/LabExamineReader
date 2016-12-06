@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public static Logger logger = Logger.getLogger(Main.class);
     private int INTERVAL = 24;
-    private Date lastReadTime;
+    private Date lastReadTime = new Date();
 
     public static void main(String args[]) {
         new Main().run();
@@ -33,7 +33,7 @@ public class Main {
         Runnable runnable = new LabExamineReader(lastReadTime);
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         // 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间
-        service.scheduleAtFixedRate(runnable, 0, INTERVAL, TimeUnit.SECONDS);
+        service.scheduleAtFixedRate(runnable, 0, INTERVAL, TimeUnit.HOURS);
     }
 
     /**
@@ -50,7 +50,7 @@ public class Main {
             logger.info(new Date() + " 读取时间间隔完成");
             r.close();
         } catch (FileNotFoundException e) {
-            logger.error(new Date() + " 未找到配置文件，请在config目录下添加interval.txt,设置读取时间间隔（以毫秒为单位）\n" + e);
+            logger.error(new Date() + " 未找到配置文件，请在config目录下添加interval.txt,设置读取时间间隔（以小时为单位）\n" + e);
 
         } catch (IOException e) {
             logger.error(new Date() + " 读取时间间隔配置文件失败！\n" + e);
