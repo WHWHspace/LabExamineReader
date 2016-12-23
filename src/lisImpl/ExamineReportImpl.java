@@ -85,7 +85,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
         idsSql = buildSqlString(ids);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "select * from "+ ExamineReportViewName +" where EFFECTIVETIME > '"+ dateFormat.format(fromDate) +"' and EFFECTIVETIME < '"+ dateFormat.format(toDate) +"' and CardNo in " + idsSql;
+        String sql = "select * from "+ ExamineReportViewName +" where RPT_DT > '"+ dateFormat.format(fromDate) +"' and RPT_DT < '"+ dateFormat.format(toDate) +"' and CardNo in " + idsSql;
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -111,7 +111,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
         }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "select * from "+ ExamineReportViewName +" where EFFECTIVETIME > '"+ dateFormat.format(fromDate) +"' and EFFECTIVETIME <= '"+ dateFormat.format(toDate) +"' and CardNo like '%" + id + "'";
+        String sql = "select * from "+ ExamineReportViewName +" where RPT_DT > '"+ dateFormat.format(fromDate) +"' and RPT_DT <= '"+ dateFormat.format(toDate) +"' and CardNo like '%" + id + "'";
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -155,13 +155,13 @@ public class ExamineReportImpl implements ExamineReportInterface{
                 }
                 report.setResult_code(item.code);
                 report.setResult_class(item.group);
-                report.setResult_date(rs.getString("EffectiveTime").substring(0,10));
+                report.setResult_date(rs.getString("RPT_DT").substring(0,10));
 
                 report.setResult_ver(0);
                 String result = rs.getString("NO_RPT");
                 report.setResult_value_t(result);
                 report.setResult_value_n(parseDouble(result));
-                report.setKin_date(rs.getString("EffectiveTime"));
+                report.setKin_date(rs.getString("RPT_DT"));
                 report.setKin_user("");
                 String patientId = rs.getString("CardNo");
                 int patientNo = getPatientNo(patientId);
