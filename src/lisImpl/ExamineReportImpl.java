@@ -26,21 +26,21 @@ public class ExamineReportImpl implements ExamineReportInterface{
 
     private Logger logger = Main.logger;
 
-    private static final String ExamineReportViewName = "v_lis_view";
-    private static final String url = "jdbc:sqlserver://172.25.5.250:1433;DatabaseName=szdc_BQ";
-    private static final String user = "sa";
-    private static final String password = "bsoft";
+    private static final String ExamineReportViewName = "v_lis_result";
+    private static final String url = "jdbc:oracle:thin:@172.25.8.135:1521:zhlis1";
+    private static final String user = "zhlis";
+    private static final String password = "zhsoft";
 
 //    private static final String ExamineReportViewName = "v_lis_view";
 //    private static final String url = "jdbc:sqlserver://127.0.0.1:1433;DatabaseName=SuzhouThirdHospitalLis";
 //    private static final String user = "sa";
 //    private static final String password = "123456";
 
-    private SqlServerHelper helper;
+    private OracleHelper helper;
     MysqlHelper mysqlHelper;
 
     public ExamineReportImpl(){
-        helper = new SqlServerHelper(url,user,password);
+        helper = new OracleHelper(url,user,password);
         mysqlHelper = new MysqlHelper(LabExamineReader.url,LabExamineReader.user,LabExamineReader.password);
     }
 
@@ -52,12 +52,12 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate,Date toDate) {
-        helper = new SqlServerHelper(url,user,password);
+        helper = new OracleHelper(url,user,password);
         helper.getConnection();
         ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"RESULT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"RESULT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
+        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"REPORT_DATE_TIME\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"REPORT_DATE_TIME\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
 //        String sql = "SELECT * from \""+ ExamineReportViewName +"\" WHERE \"result_date_time\" > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and \"result_date_time\" <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss')";
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
@@ -75,7 +75,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate, Date toDate, ArrayList<String> ids) {
-        helper = new SqlServerHelper(url,user,password);
+        helper = new OracleHelper(url,user,password);
         helper.getConnection();
         ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
         if((ids == null)||(ids.size() == 0)){
@@ -85,7 +85,7 @@ public class ExamineReportImpl implements ExamineReportInterface{
         idsSql = buildSqlString(ids);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "select * from "+ ExamineReportViewName +" where RPT_DT > '"+ dateFormat.format(fromDate) +"' and RPT_DT < '"+ dateFormat.format(toDate) +"' and CardNo in " + idsSql;
+        String sql = "select * from "+ ExamineReportViewName +" where REPORT_DATE_TIME > '"+ dateFormat.format(fromDate) +"' and REPORT_DATE_TIME < '"+ dateFormat.format(toDate) +"' and CardNo in " + idsSql;
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -103,15 +103,20 @@ public class ExamineReportImpl implements ExamineReportInterface{
      */
     @Override
     public ArrayList<ExamineReport> getUpdatedExamineReport(Date fromDate, Date toDate, String id) {
-        helper = new SqlServerHelper(url,user,password);
+        helper = new OracleHelper(url,user,password);
         helper.getConnection();
         ArrayList<ExamineReport> reports = new ArrayList<ExamineReport>();
         if(id == null){
             return reports;
         }
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String sql = "select * from "+ ExamineReportViewName +" where RPT_DT > '"+ dateFormat.format(fromDate) +"' and RPT_DT <= '"+ dateFormat.format(toDate) +"' and CardNo like '%" + id + "'";
+	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	    String sql = "SELECT * from "+ ExamineReportViewName +" WHERE REPORT_DATE_TIME > to_date('"+ dateFormat.format(fromDate) +"', 'yyyy-mm-dd hh24:mi:ss') and REPORT_DATE_TIME <= to_date('"+ dateFormat.format(toDate) +"', 'yyyy-mm-dd hh24:mi:ss') and PATIENT_ID LIKE '%"+ id +"'";
+
+	    logger.info(sql);
+
+//        String sql = "select * from "+ ExamineReportViewName +" where REPORT_DATE_TIME > '"+ dateFormat.format(fromDate) +"' and REPORT_DATE_TIME <= '"+ dateFormat.format(toDate) +"' and CardNo like '%" + id + "'";
         ResultSet rs = helper.executeQuery(sql);
         reports = readExamineReportData(rs);
 
@@ -149,21 +154,21 @@ public class ExamineReportImpl implements ExamineReportInterface{
         try {
             while(rs.next()){
                 ExamineReport report = new ExamineReport();
-                ExamineItem item = getMappedCode(rs.getString("EX_PROJ_CODE"));
+                ExamineItem item = getMappedCode(rs.getString("ITEM_CODE"));
                 if(item == null){
                     continue;
                 }
                 report.setResult_code(item.code);
                 report.setResult_class(item.group);
-                report.setResult_date(rs.getString("RPT_DT").substring(0,10));
+                report.setResult_date(rs.getString("REPORT_DATE_TIME").substring(0,10));
 
                 report.setResult_ver(0);
-                String result = rs.getString("NO_RPT");
+                String result = rs.getString("RESULT");
                 report.setResult_value_t(result);
                 report.setResult_value_n(parseDouble(result));
-                report.setKin_date(rs.getString("RPT_DT"));
+                report.setKin_date(rs.getString("REPORT_DATE_TIME"));
                 report.setKin_user("");
-                String patientId = rs.getString("CardNo");
+                String patientId = rs.getString("PATIENT_ID");
                 int patientNo = getPatientNo(patientId);
                 report.setPat_no(patientNo);
 

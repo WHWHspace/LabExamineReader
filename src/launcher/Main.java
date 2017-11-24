@@ -25,6 +25,7 @@ public class Main {
     }
 
     private void run() {
+    	logger.info("开启线程");
         readInterval();
         readLastReadTime();
         CodeMap.readCodeMap();
@@ -32,7 +33,7 @@ public class Main {
         Runnable runnable = new LabExamineReader(lastReadTime);
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
         // 第二个参数为首次执行的延时时间，第三个参数为定时执行的间隔时间
-        service.scheduleAtFixedRate(runnable, 1, INTERVAL, TimeUnit.MINUTES);
+        service.scheduleAtFixedRate(runnable, 0, INTERVAL, TimeUnit.MINUTES);
     }
 
     /**
@@ -49,7 +50,7 @@ public class Main {
             logger.info(new Date() + " 读取时间间隔完成");
             r.close();
         } catch (FileNotFoundException e) {
-            logger.error(new Date() + " 未找到配置文件，请在config目录下添加interval.txt,设置读取时间间隔（以毫秒为单位）\n" + e);
+            logger.error(new Date() + " 未找到配置文件，请在config目录下添加interval.txt,设置读取时间间隔（以分为单位）\n" + e);
 
         } catch (IOException e) {
             logger.error(new Date() + " 读取时间间隔配置文件失败！\n" + e);

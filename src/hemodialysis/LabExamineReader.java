@@ -44,6 +44,7 @@ public class LabExamineReader implements Runnable{
 
     @Override
     public void run() {
+    	logger.info("更新读取时间");
         Date currentDate = new Date();
         Calendar cal = Calendar.getInstance();
         String s = new SimpleDateFormat( "yyyy-MM-dd ").format(cal.getTime());
@@ -70,6 +71,7 @@ public class LabExamineReader implements Runnable{
      * @param toDate
      */
     public void readNewAddedExamineReportByIDs(Date fromDate,Date toDate){
+    	logger.info("开始读取数据");
         ArrayList<String> ids = getPatientIds();
         ids = formatIds(ids);
 
